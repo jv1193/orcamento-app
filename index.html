@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Orçamento - A MECÂNICA</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; max-width: 500px; margin: auto; }
+    input, textarea { width: 100%; margin-bottom: 10px; padding: 8px; font-size: 14px; }
+    button { padding: 10px 20px; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <h2>Gerar Orçamento - A MECÂNICA</h2>
+
+  <input id="cliente" placeholder="Nome do cliente" />
+  <input id="veiculo" placeholder="Veículo" />
+  <textarea id="itens" rows="6" placeholder="Serviços e Peças (ex: Pastilhas R$189,20)"></textarea>
+  <input id="total" placeholder="Total (ex: R$ 824,20)" />
+  <textarea id="obs" rows="3" placeholder="Observações (formas de pagamento, etc)"></textarea>
+
+  <button onclick="gerarPDF()">Gerar PDF</button>
+
+  <script>
+    async function gerarPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      // LOGO
+      const logo = await fetch("https://i.imgur.com/oINZGQW.png")  // substitua pela URL da sua logo
+        .then(res => res.blob())
+        .then(blob => new Promise(resolve => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.readAsDataURL(blob);
+        }));
+
+      doc.addImage(logo, 'PNG', 15, 10, 40, 40);
+
+      let y = 60;
+      doc.setFontSize(16);
+      doc.text("ORÇAMENTO - A MECÂNICA", 60, 20);
+
+      doc.setFontSize(12);
+      doc.text(`Cliente: ${cliente.value}`, 15, y);
+      doc.text(`Veículo: ${veiculo.value}`, 15, y + 10);
+      doc.text("Serviços e Peças:", 15, y + 25);
+      doc.setFont("times", "normal");
+
+      const itens = itens.value.split("\n");
+      let itemY = y + 35;
+      itens.forEach(item => {
+        doc.text(`• ${item}`, 20, itemY);
+        itemY += 8;
+      });
+
+      doc.setFont("helvetica", "bold");
+      doc.text(`Total: ${total.value}`, 15, itemY + 5);
+
+      doc.setFont("helvetica", "normal");
+      doc.text("Observações:", 15, itemY + 20);
+      const obs = obs.value.split("\n");
+      let obsY = itemY + 30;
+      obs.forEach(o => {
+        doc.text(`• ${o}`, 20, obsY);
+        obsY += 8;
+      });
+
+      doc.text("Obrigado por escolher A MECÂNICA!", 15, obsY + 10);
+      doc.save("orcamento.pdf");
+    }
+  </script>
+</body>
+</html>
